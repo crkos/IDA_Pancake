@@ -1,5 +1,5 @@
 use std::cmp::min;
-use std::collections::{HashSet, VecDeque};
+use std::collections::{HashSet};
 use rand::prelude::IteratorRandom;
 
 // Hace la permutacion de n pancakes
