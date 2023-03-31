@@ -60,52 +60,50 @@ fn is_pancake_sorted(pancakes: &Vec<char>) -> bool {
     true
 }
 
-// IDA*
-// Función que realiza la búsqueda IDA*
+fn ida_star_recursive(
+    curr_pancakes: &Vec<char>,
+    target: &Vec<char>,
+    g: i32,
+    umbral: i32,
+    count: &mut i32,
+) -> i32 {
+    *count += 1;
+    let f = g + h4(&curr_pancakes, &target) as i32;
+    if f > umbral {
+        return f;
+    }
+    if curr_pancakes == target {
+        println!("Solucion encontrada: {:?}", curr_pancakes);
+        println!("Numero de nodos visitados: {}", *count);
+        return 0;
+    }
+    let mut proximo_umbral = i32::MAX;
+    let sucesores = generar_sucesores(&curr_pancakes);
+    for sucesor in sucesores {
+        let sucesor_g = g + 1;
+        let sucesor_umbral = ida_star_recursive(&sucesor, &target, sucesor_g, umbral, count);
+        if sucesor_umbral == 0 {
+            return 0;
+        }
+        proximo_umbral = min(proximo_umbral, sucesor_umbral);
+    }
+    proximo_umbral
+}
+
 fn ida_star(pancakes: &Vec<char>) {
     let target = {
         let mut sorted_pancakes = pancakes.clone();
         sorted_pancakes.sort();
         sorted_pancakes
     };
-
-    let mut umbral = h4(pancakes, &target) as i32;
+    let mut umbral = h4(&pancakes, &target) as i32;
     let mut count = 0;
-
     loop {
-        let mut proximo_umbral = i32::MAX;
-        let mut visitados = HashSet::new();
-        let mut pila = VecDeque::new();
-        pila.push_back((pancakes.clone(), 0));
-
-        while let Some((curr_pancakes, g)) = pila.pop_back() {
-            count += 1;
-
-            let f = g + h4(&curr_pancakes, &target) as i32;
-            if f > umbral {
-                proximo_umbral = min(proximo_umbral, f);
-                continue;
-            }
-
-            if curr_pancakes == target {
-                println!("Solucion encontrada: {:?}", curr_pancakes);
-                println!("Numero de nodos visitados: {}", count);
-                return;
-            }
-
-            let sucesores = {
-                let mut sucesores =
-                    generar_sucesores(&curr_pancakes);
-                sucesores.retain(|s| !visitados.contains(s));
-                sucesores
-            };
-            for sucesor in sucesores {
-                visitados.insert(sucesor.clone());
-                pila.push_back((sucesor, g + 1));
-            }
+        let sucesor_umbral = ida_star_recursive(&pancakes, &target, 0, umbral, &mut count);
+        if sucesor_umbral == 0 {
+            return;
         }
-
-        umbral = proximo_umbral;
+        umbral = sucesor_umbral;
         println!("Umbral actualizado a: {}", umbral);
     }
 }
